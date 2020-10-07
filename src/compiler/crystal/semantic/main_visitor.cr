@@ -2559,6 +2559,7 @@ module Crystal
       when Path
         exp.accept self
         if const = exp.target_const
+          const.pointer_read = true
           const.value
         end
       when ReadInstanceVar
