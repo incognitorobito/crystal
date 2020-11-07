@@ -18,4 +18,8 @@ lib LibC
     lpWSAData : WSAData*
   ) : Int32
 
+  fun WSAGetLastError() : Int32
+
+  fun WSACleanup() : Int32
+
 end

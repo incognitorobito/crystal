@@ -1,4 +1,5 @@
 require "./types"
+require "./winsock2"
 
 lib LibC
   SOCK_DGRAM     =  2
@@ -28,8 +29,8 @@ lib LibC
   SHUT_WR        =      1
   SOCK_CLOEXEC   = 524288
 
-  alias SocklenT = UInt
-  alias SaFamilyT = UShort
+  alias SocklenT = Int
+  alias SaFamilyT = Short
 
   struct Sockaddr
     sa_family : SaFamilyT
@@ -54,10 +55,10 @@ lib LibC
   fun getsockname(fd : Int, addr : Sockaddr*, len : SocklenT*) : Int
   fun getsockopt(fd : Int, level : Int, optname : Int, optval : Void*, optlen : SocklenT*) : Int
   fun listen(fd : Int, n : Int) : Int
-  fun recv(fd : Int, buf : Void*, n : Int, flags : Int) : SSizeT
-  fun recvfrom(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT*) : SSizeT
-  fun send(fd : Int, buf : Void*, n : Int, flags : Int) : SSizeT
-  fun sendto(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT) : SSizeT
+  fun recv(fd : Int, buf : Void*, n : Int, flags : Int) : SizeT
+  fun recvfrom(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT*) : SizeT
+  fun send(fd : Int, buf : Void*, n : Int, flags : Int) : SizeT
+  fun sendto(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT) : SizeT
   fun setsockopt(fd : Int, level : Int, optname : Int, optval : Void*, optlen : SocklenT) : Int
   fun shutdown(fd : Int, how : Int) : Int
   fun socket(domain : Int, type : Int, protocol : Int) : Int
