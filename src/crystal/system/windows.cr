@@ -10,4 +10,8 @@ module Crystal::System
     yield buffer, false
     raise "BUG: retry_wstr_buffer returned"
   end
+
+  def self.make_word(b_low : UInt8, b_high : UInt8)
+    return (b_low & 0xFF | (b_high & 0xFF << 8))
+  end
 end

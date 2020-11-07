@@ -2,9 +2,10 @@ require "c/winnt"
 
 @[Link("Ws2_32")]
 lib LibC
-
-  WINSOCK_VERSION = 0x20000002
-  WSA_IO_PENDING = 997;
+  # WinSock Error Codes https://docs.microsoft.com/en-us/windows/win32/winsock/windows-sockets-error-codes-2
+  WSA_IO_PENDING = 997
+  WSAECONNREFUSED = 10061
+  WSAEADDRINUSE = 10048
 
   type WINSOCK = UInt64
 

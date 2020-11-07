@@ -1,3 +1,5 @@
+require "c/sys/winsock2"
+
 lib LibC
   # source https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr
   EPERM        =  1
@@ -39,6 +41,10 @@ lib LibC
   ENOTEMPTY    = 41
   EILSEQ       = 42
   STRUNCATE    = 80
+
+
+  ECONNREFUSED = LibC::WSAECONNREFUSED
+  EADDRINUSE = LibC::WSAEADDRINUSE
 
   alias ErrnoT = Int
 end
