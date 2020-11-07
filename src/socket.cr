@@ -518,17 +518,21 @@ class Socket < IO
   end
 
   def blocking
-    fcntl(LibC::F_GETFL) & LibC::O_NONBLOCK == 0
+    {% if flag?(:unix) %}
+      fcntl(LibC::F_GETFL) & LibC::O_NONBLOCK == 0
+    {% end %}
   end
 
   def blocking=(value)
-    flags = fcntl(LibC::F_GETFL)
-    if value
-      flags &= ~LibC::O_NONBLOCK
-    else
-      flags |= LibC::O_NONBLOCK
-    end
-    fcntl(LibC::F_SETFL, flags)
+    {% if flag?(:unix) %}
+      flags = fcntl(LibC::F_GETFL)
+      if value
+        flags &= ~LibC::O_NONBLOCK
+      else
+        flags |= LibC::O_NONBLOCK
+      end
+      fcntl(LibC::F_SETFL, flags)
+    {% end %}
   end
 
   def close_on_exec?
@@ -595,14 +599,25 @@ class Socket < IO
     _fd = @volatile_fd.swap(-1)
 
     err = nil
-    if LibC.close(_fd) != 0
-      case Errno.value
-      when Errno::EINTR, Errno::EINPROGRESS
-        # ignore
-      else
-        err = Socket::Error.from_errno("Error closing socket")
+    {% if flag?(:unix) %}
+      if LibC.close(_fd) != 0
+        case Errno.value
+        when Errno::EINTR, Errno::EINPROGRESS
+          # ignore
+        else
+          err = Socket::Error.from_errno("Error closing socket")
+        end
       end
-    end
+    {% elsif flag?(:win32) %}
+      # if LibC.closesocket(_fd) != 0
+      #   case Errno.value
+      #   when Errno::EINTR, Errno::EINPROGRESS
+      #     # ignore
+      #   else
+      #     err = Socket::Error.from_winerror("Error closing socket")
+      #   end
+      # end
+    {% end %}
 
     raise err if err
   end

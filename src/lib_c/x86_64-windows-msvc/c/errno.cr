@@ -1,4 +1,4 @@
-require "c/sys/winsock2"
+require "winerror"
 
 lib LibC
   # source https://docs.microsoft.com/en-us/cpp/c-runtime-library/errno-doserrno-sys-errlist-and-sys-nerr
@@ -42,9 +42,12 @@ lib LibC
   EILSEQ       = 42
   STRUNCATE    = 80
 
-
-  ECONNREFUSED = LibC::WSAECONNREFUSED
-  EADDRINUSE = LibC::WSAEADDRINUSE
+  # Map IO error convention to WinSock
+  ECONNREFUSED = WinError::WSAECONNREFUSED
+  EADDRINUSE = WinError::WSAEADDRINUSE
+  EISCONN = WinError::WSAEISCONN
+  EINPROGRESS = WinError::WSAEINPROGRESS
+  EALREADY = WinError::WSAEALREADY
 
   alias ErrnoT = Int
 end
