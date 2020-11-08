@@ -31,7 +31,7 @@ class Socket
     # ```
     def self.resolve(domain, service, family : Family? = nil, type : Type = nil, protocol : Protocol = Protocol::IP, timeout = nil) : Array(Addrinfo)
       addrinfos = [] of Addrinfo
-
+      
       getaddrinfo(domain, service, family, type, protocol, timeout) do |addrinfo|
         loop do
           addrinfos << addrinfo.not_nil!
@@ -96,7 +96,7 @@ class Socket
       end
     end
 
-    private def self.getaddrinfo(domain, service, family, type, protocol, timeout)
+    private def self.getaddrinfo(domain, service, family, type, protocol, timeout) 
       # RFC 3986 says:
       # > When a non-ASCII registered name represents an internationalized domain name
       # > intended for resolution via the DNS, the name must be transformed to the IDNA
@@ -134,6 +134,8 @@ class Socket
       else
         raise Error.new(ret, domain)
       end
+
+      # TODO Consider adding support for WSA errors, see https://docs.microsoft.com/en-us/windows/win32/api/ws2tcpip/nf-ws2tcpip-getnameinfo
 
       begin
         yield new(ptr)

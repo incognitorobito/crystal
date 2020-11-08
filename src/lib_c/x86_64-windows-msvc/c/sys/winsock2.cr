@@ -2,7 +2,6 @@ require "c/winnt"
 
 @[Link("Ws2_32")]
 lib LibC
-  type WINSOCK = UInt64
 
   struct WSAData
     wVersion : WORD
@@ -18,6 +17,6 @@ lib LibC
 
   fun WSACleanup() : UInt32
 
-  fun closesocket(WINSOCK) : UInt32
+  fun closesocket(s : Int) : UInt32
 
 end

@@ -21,14 +21,15 @@ lib LibC
   EAI_SYSTEM     =    -11
   EAI_OVERFLOW   =    -12
 
+  # This struct has a slightly different layout on win32, see https://docs.microsoft.com/en-us/windows/win32/api/ws2def/ns-ws2def-addrinfoa
   struct Addrinfo
     ai_flags : Int
     ai_family : Int
     ai_socktype : Int
     ai_protocol : Int
     ai_addrlen : SizeT
-    ai_addr : Sockaddr*
     ai_canonname : Char*
+    ai_addr : Sockaddr*
     ai_next : Addrinfo*
   end
 

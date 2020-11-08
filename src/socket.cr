@@ -105,8 +105,11 @@ class Socket < IO
 
   # Forces opened sockets to be closed on `exec(2)`. Only for platforms that don't
   # support `SOCK_CLOEXEC` (e.g., Darwin).
+  # On Win32 sockets created with the socket function cannot be inherited by child processes by default.
+  # We would need to use CreateFile for the socket and pass lpSecurityAttributes for that functionality.
+  # See https://docs.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew#remarks for more info.
   protected def init_close_on_exec(fd : Int32)
-    {% unless LibC.has_constant?(:SOCK_CLOEXEC) %}
+    {% unless LibC.has_constant?(:SOCK_CLOEXEC) || flag?(:win32) %}
       LibC.fcntl(fd, LibC::F_SETFD, LibC::FD_CLOEXEC)
     {% end %}
   end
@@ -609,7 +612,10 @@ class Socket < IO
         end
       end
     {% elsif flag?(:win32) %}
-      # Todo handle this by calling closesocket.
+      if LibC.closesocket(_fd) != 0
+        LibC.WSAGetLastError()
+        err = Socket::Error.from_winerror("Error closing socket")
+      end
     {% end %}
 
     raise err if err
