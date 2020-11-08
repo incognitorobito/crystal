@@ -420,6 +420,7 @@ class Socket < IO
     setsockopt_bool LibC::SO_REUSEADDR, val
   end
 
+  # TODO Consider raising an exception as this option is not supported on Win32.
   def reuse_port?
     {% unless flag?(:win32) %}
       getsockopt(LibC::SO_REUSEPORT, 0) do |value|
@@ -434,7 +435,7 @@ class Socket < IO
     {% end %}
   end
 
-  # This option is not supported on Win32.
+  # TODO Consider raising an exception as this option is not supported on Win32.
   def reuse_port=(val : Bool)
     {% unless flag?(:win32) %}
       setsockopt_bool LibC::SO_REUSEPORT, val
