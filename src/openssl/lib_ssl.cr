@@ -2,10 +2,15 @@ require "./lib_crypto"
 
 {% begin %}
   lib LibSSL
-    {% from_libressl = (`hash pkg-config 2> /dev/null || printf %s false` != "false") &&
-                       (`test -f $(pkg-config --silence-errors --variable=includedir libssl)/openssl/opensslv.h || printf %s false` != "false") &&
-                       (`printf "#include <openssl/opensslv.h>\nLIBRESSL_VERSION_NUMBER" | ${CC:-cc} $(pkg-config --cflags --silence-errors libssl || true) -E -`.chomp.split('\n').last != "LIBRESSL_VERSION_NUMBER") %}
-    {% ssl_version = `hash pkg-config 2> /dev/null && pkg-config --silence-errors --modversion libssl || printf %s 0.0.0`.split.last.gsub(/[^0-9.]/, "") %}
+    {% if flag?(:unix) %}
+      {% from_libressl = (`hash pkg-config 2> /dev/null || printf %s false` != "false") &&
+                        (`test -f $(pkg-config --silence-errors --variable=includedir libssl)/openssl/opensslv.h || printf %s false` != "false") &&
+                        (`printf "#include <openssl/opensslv.h>\nLIBRESSL_VERSION_NUMBER" | ${CC:-cc} $(pkg-config --cflags --silence-errors libssl || true) -E -`.chomp.split('\n').last != "LIBRESSL_VERSION_NUMBER") %}
+      {% ssl_version = `hash pkg-config 2> /dev/null && pkg-config --silence-errors --modversion libssl || printf %s 0.0.0`.split.last.gsub(/[^0-9.]/, "") %}
+    {% elsif flag?(:win32) %}
+      {% from_libressl = false %}
+      {% ssl_version = `powershell -noprofile -command "$v = (openssl version) | Write-Output; $v = $v.Split(' '); $v[1].Trim('h') | Write-Output;"` %}
+    {% end %}
 
     {% if from_libressl %}
       LIBRESSL_VERSION = {{ ssl_version }}
@@ -14,10 +19,16 @@ require "./lib_crypto"
       LIBRESSL_VERSION = "0.0.0"
       OPENSSL_VERSION = {{ ssl_version }}
     {% end %}
+
   end
 {% end %}
 
-@[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'`")]
+{% if flag?(:unix) %}
+  @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libssl || printf %s '-lssl -lcrypto'`")]
+{% elsif flag?(:win32) %}
+  @[Link("libssl")]
+{% end %}
+
 lib LibSSL
   alias Int = LibC::Int
   alias Char = LibC::Char

@@ -1,9 +1,14 @@
 {% begin %}
   lib LibCrypto
-    {% from_libressl = (`hash pkg-config 2> /dev/null || printf %s false` != "false") &&
-                       (`test -f $(pkg-config --silence-errors --variable=includedir libcrypto)/openssl/opensslv.h || printf %s false` != "false") &&
-                       (`printf "#include <openssl/opensslv.h>\nLIBRESSL_VERSION_NUMBER" | ${CC:-cc} $(pkg-config --cflags --silence-errors libcrypto || true) -E -`.chomp.split('\n').last != "LIBRESSL_VERSION_NUMBER") %}
-    {% ssl_version = `hash pkg-config 2> /dev/null && pkg-config --silence-errors --modversion libcrypto || printf %s 0.0.0`.split.last.gsub(/[^0-9.]/, "") %}
+    {% if flag?(:unix) %}
+      {% from_libressl = (`hash pkg-config 2> /dev/null || printf %s false` != "false") &&
+                        (`test -f $(pkg-config --silence-errors --variable=includedir libcrypto)/openssl/opensslv.h || printf %s false` != "false") &&
+                        (`printf "#include <openssl/opensslv.h>\nLIBRESSL_VERSION_NUMBER" | ${CC:-cc} $(pkg-config --cflags --silence-errors libcrypto || true) -E -`.chomp.split('\n').last != "LIBRESSL_VERSION_NUMBER") %}
+      {% ssl_version = `hash pkg-config 2> /dev/null && pkg-config --silence-errors --modversion libcrypto || printf %s 0.0.0`.split.last.gsub(/[^0-9.]/, "") %}
+    {% elsif flag?(:win32) %}
+      {% from_libressl = false %}
+      {% ssl_version = `powershell -noprofile -command "$v = (openssl version) | Write-Output; $v = $v.Split(' '); $v[1].Trim('h') | Write-Output;"` %}
+    {% end %}
 
     {% if from_libressl %}
       LIBRESSL_VERSION = {{ ssl_version }}
@@ -12,10 +17,16 @@
       LIBRESSL_VERSION = "0.0.0"
       OPENSSL_VERSION = {{ ssl_version }}
     {% end %}
+
   end
 {% end %}
 
-@[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
+{% if flag?(:unix) %}
+  @[Link(ldflags: "`command -v pkg-config > /dev/null && pkg-config --libs --silence-errors libcrypto || printf %s '-lcrypto'`")]
+{% elsif flag?(:win32) %}
+  @[Link("libcrypto")]
+{% end %}
+
 lib LibCrypto
   alias Char = LibC::Char
   alias Int = LibC::Int
