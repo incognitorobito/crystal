@@ -421,19 +421,24 @@ class Socket < IO
   end
 
   def reuse_port?
-    getsockopt(LibC::SO_REUSEPORT, 0) do |value|
-      return value != 0
-    end
+    {% unless flag?(:win32) %}
+      getsockopt(LibC::SO_REUSEPORT, 0) do |value|
+        return value != 0
+      end
 
-    if Errno.value == Errno::ENOPROTOOPT
-      return false
-    else
-      raise Socket::Error.from_errno("getsockopt")
-    end
+      if Errno.value == Errno::ENOPROTOOPT
+        return false
+      else
+        raise Socket::Error.from_errno("getsockopt")
+      end
+    {% end %}
   end
 
+  # This option is not supported on Win32.
   def reuse_port=(val : Bool)
-    setsockopt_bool LibC::SO_REUSEPORT, val
+    {% unless flag?(:win32) %}
+      setsockopt_bool LibC::SO_REUSEPORT, val
+    {% end %}
   end
 
   def broadcast?

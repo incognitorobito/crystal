@@ -12,7 +12,6 @@ lib LibC
   SO_LINGER      = 13
   SO_RCVBUF      =  8
   SO_REUSEADDR   =  2
-  SO_REUSEPORT   = 15
   SO_SNDBUF      =  7
   AF_UNIX        = -1
   AF_INET        = 2
@@ -54,7 +53,7 @@ lib LibC
   fun recvfrom(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT*) : SizeT
   fun send(fd : Int, buf : Void*, n : Int, flags : Int) : SizeT
   fun sendto(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT) : SizeT
-  fun setsockopt(fd : Int, level : Int, optname : Int, optval : Void*, optlen : SocklenT) : Int
+  fun setsockopt(fd : Int, level : Int, optname : Int, optval :  Char*, optlen : SocklenT) : Int
   fun shutdown(fd : Int, how : Int) : Int
   fun socket(domain : Int, type : Int, protocol : Int) : Int
   fun socketpair(domain : Int, type : Int, protocol : Int, fds : StaticArray(Int, 2)) : Int
