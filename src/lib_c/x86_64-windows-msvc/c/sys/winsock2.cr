@@ -14,10 +14,10 @@ lib LibC
     lpWSAData : WSAData*
   ) : Int
 
-  fun WSAGetLastError() : Int
+  fun WSAGetLastError() : UInt32
 
-  fun WSACleanup() : Int
+  fun WSACleanup() : UInt32
 
-  fun closesocket(WINSOCK) : Int
+  fun closesocket(WINSOCK) : UInt32
 
 end

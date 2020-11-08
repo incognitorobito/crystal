@@ -83,7 +83,12 @@ class Socket
       getter error_code : Int32
 
       def self.new(error_code, domain)
-        new error_code, String.new(LibC.gai_strerror(error_code)), domain
+        {% if flag?(:unix) %}
+          new error_code, String.new(LibC.gai_strerror(error_code)), domain
+        {% elsif flag?(:win32) %}
+          wsa_error = WinError.new LibC.WSAGetLastError()
+          new error_code, wsa_error.message, domain
+        {% end %}
       end
 
       def initialize(@error_code, message, domain)

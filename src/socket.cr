@@ -609,14 +609,7 @@ class Socket < IO
         end
       end
     {% elsif flag?(:win32) %}
-      # if LibC.closesocket(_fd) != 0
-      #   case Errno.value
-      #   when Errno::EINTR, Errno::EINPROGRESS
-      #     # ignore
-      #   else
-      #     err = Socket::Error.from_winerror("Error closing socket")
-      #   end
-      # end
+      # Todo handle this by calling closesocket.
     {% end %}
 
     raise err if err

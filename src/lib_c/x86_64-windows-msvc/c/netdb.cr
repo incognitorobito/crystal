@@ -26,14 +26,13 @@ lib LibC
     ai_family : Int
     ai_socktype : Int
     ai_protocol : Int
-    ai_addrlen : SocklenT
+    ai_addrlen : SizeT
     ai_addr : Sockaddr*
     ai_canonname : Char*
     ai_next : Addrinfo*
   end
 
   fun freeaddrinfo(ai : Addrinfo*) : Void
-  fun gai_strerror(ecode : Int) : Char*
   fun getaddrinfo(name : Char*, service : Char*, req : Addrinfo*, pai : Addrinfo**) : Int
   fun getnameinfo(sa : Sockaddr*, salen : SocklenT, host : Char*, hostlen : SocklenT, serv : Char*, servlen : SocklenT, flags : Int) : Int
 end
