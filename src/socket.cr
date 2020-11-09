@@ -184,8 +184,8 @@ class Socket < IO
   # sock.bind 1234
   # ```
   def bind(port : Int)
-    Addrinfo.resolve("::", port, @family, @type, @protocol) do |addrinfo|
-      bind(addrinfo, "::#{port}") { |errno| errno }
+    Addrinfo.resolve("::1", port, @family, @type, @protocol) do |addrinfo|
+      bind(addrinfo, "::1#{port}") { |errno| errno }
     end
   end
 
@@ -493,6 +493,7 @@ class Socket < IO
     raise Socket::Error.from_errno("getsockopt")
   end
 
+  # TODO On Win32 we need to use WSAGetLastError.
   protected def getsockopt(optname, optval, level = LibC::SOL_SOCKET)
     optsize = LibC::SocklenT.new(sizeof(typeof(optval)))
     ret = LibC.getsockopt(fd, level, optname, (pointerof(optval).as(Void*)), pointerof(optsize))
@@ -500,11 +501,12 @@ class Socket < IO
     ret
   end
 
+  # TODO On Win32 we need to use WSAGetLastError.
   # NOTE: *optval* is restricted to `Int32` until sizeof works on variables.
   def setsockopt(optname, optval, level = LibC::SOL_SOCKET)
     optsize = LibC::SocklenT.new(sizeof(typeof(optval)))
     ret = LibC.setsockopt(fd, level, optname, (pointerof(optval).as(Void*)), optsize)
-    raise Socket::Error.from_errno("setsockopt") if ret == -1
+    raise Socket::Error.from_winerror("setsockopt") if ret == -1
     ret
   end
 

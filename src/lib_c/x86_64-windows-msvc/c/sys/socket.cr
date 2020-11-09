@@ -2,26 +2,29 @@ require "./types"
 require "./winsock2"
 
 lib LibC
-  SOCK_DGRAM     =  2
-  SOCK_RAW       =  3
-  SOCK_SEQPACKET =  5
-  SOCK_STREAM    =  1
-  SOL_SOCKET     =  1
-  SO_BROADCAST   =  6
-  SO_KEEPALIVE   =  9
-  SO_LINGER      = 13
-  SO_RCVBUF      =  8
-  SO_REUSEADDR   =  2
-  SO_SNDBUF      =  7
-  AF_UNIX        = -1
-  AF_INET        = 2
-  AF_INET6       = 23
-  AF_UNSPEC      = 0
-  AF_LOCAL       = LibC::PF_LOCAL
-  SHUT_RD        =      0
-  SHUT_RDWR      =      2
-  SHUT_WR        =      1
-  SOCK_CLOEXEC   = 524288
+  SOCK_DGRAM     = 2
+  SOCK_RAW       = 3
+  SOCK_SEQPACKET = 5
+  SOCK_STREAM    = 1
+  SOL_SOCKET     = 65535
+  SO_BROADCAST   = 32
+  SO_KEEPALIVE   = 8
+  SO_LINGER      = 128
+  SO_RCVBUF      = 4098
+  SO_REUSEADDR   = 4
+  SO_SNDBUF      = 4097
+  PF_INET        = 2
+  PF_INET6       = 23
+  PF_UNIX        = LibC::PF_LOCAL
+  PF_UNSPEC      = 0
+  PF_LOCAL       = 1
+  AF_INET        = LibC::PF_INET
+  AF_INET6       = LibC::PF_INET6
+  AF_UNIX        = LibC::PF_UNIX
+  AF_UNSPEC      = LibC::PF_UNSPEC
+  SHUT_RD        = 0
+  SHUT_RDWR      = 2
+  SHUT_WR        = 1
 
   alias SocklenT = Int
   alias SaFamilyT = Short
@@ -53,7 +56,7 @@ lib LibC
   fun recvfrom(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT*) : SizeT
   fun send(fd : Int, buf : Void*, n : Int, flags : Int) : SizeT
   fun sendto(fd : Int, buf : Void*, n : Int, flags : Int, addr : Sockaddr*, addr_len : SocklenT) : SizeT
-  fun setsockopt(fd : Int, level : Int, optname : Int, optval :  Char*, optlen : SocklenT) : Int
+  fun setsockopt(fd : Int, level : Int, optname : Int, optval :  Void*, optlen : SocklenT) : Int
   fun shutdown(fd : Int, how : Int) : Int
   fun socket(domain : Int, type : Int, protocol : Int) : Int
   fun socketpair(domain : Int, type : Int, protocol : Int, fds : StaticArray(Int, 2)) : Int

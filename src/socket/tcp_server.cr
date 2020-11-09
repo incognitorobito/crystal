@@ -55,7 +55,7 @@ class TCPServer < TCPSocket
 
   # Creates a new TCP server, listening on all local interfaces (`::`).
   def self.new(port : Int, backlog = SOMAXCONN, reuse_port = false)
-    new("::", port, backlog, reuse_port: reuse_port)
+    new("::1", port, backlog, reuse_port: reuse_port)
   end
 
   # Creates a new TCP server and yields it to the block. Eventually closes the
