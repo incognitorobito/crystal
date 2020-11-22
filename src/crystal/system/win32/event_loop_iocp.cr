@@ -6,29 +6,28 @@ module Crystal::EventLoop
 
   # Runs the event loop.
   def self.run_once : Nil
-
     unless @@queue.empty?
-      next_event = @@queue.min_by {|e| e.wake_in}
-      next_fiber = next_event.overlapped.resumable.unsafe_as(Fiber)
+      next_event = @@queue.min_by { |e| e.wake_in }
+      elapsed_time = (Time.monotonic - next_event.slept_at)
 
-      now = Time.monotonic
-
-      unless (now - next_event.slept_at) > next_event.wake_in
-        sleepy_time = (next_event.wake_in - (now - next_event.slept_at)).total_milliseconds.to_i
+      unless elapsed_time > next_event.wake_in
+        sleepy_time = (next_event.wake_in - elapsed_time).total_milliseconds.to_i
         io_entry = Slice.new(1, LibC::OVERLAPPED_ENTRY.new)
         
-        if LibC.GetQueuedCompletionStatusEx(Thread.current.iocp, io_entry, 1, out removed, sleepy_time, false)
-          overlapped = io_entry.first.lpOverlapped
-          if overlapped
-            next_fiber = overlapped.value.resumable.unsafe_as(Fiber)
-          end
-        else
+        unless LibC.GetQueuedCompletionStatusEx(Thread.current.iocp, io_entry, 1, out removed, sleepy_time, false)
           raise RuntimeError.from_winerror("Error getting i/o completion status")
+        else
+          if removed == 1 && io_entry.first.lpOverlapped
+            next_event = io_entry.first.lpOverlapped.value.cEvent.unsafe_as(Crystal::Event)
+          end
         end
       end
 
       dequeue next_event
-      Crystal::Scheduler.enqueue next_fiber
+      Crystal::Scheduler.enqueue next_event.fiber
+    else
+      Crystal::System.print_error "Warning: No runnables in scheduler. Exiting program.\n"
+      ::exit
     end
   end
 
@@ -65,31 +64,27 @@ module Crystal::EventLoop
 end
 
 struct Crystal::Event
-  property overlapped : LibC::WSAOVERLAPPED
-  property wake_in : Time::Span
   property slept_at : Time::Span
+  property wake_in : Time::Span
+  property fiber : Fiber
 
-  def initialize(fiber : Fiber)
-    @overlapped = LibC::WSAOVERLAPPED.new
-    @overlapped.resumable = fiber.unsafe_as(Pointer(Void))
+  def initialize(@fiber : Fiber)
     @wake_in = Time::Span::ZERO
     @slept_at = Time::Span::ZERO
   end
 
   # Frees the event
   def free : Nil
-    # TODO PostQueuedCompletionStatus?
     Crystal::EventLoop.dequeue(self)
   end
 
   def add(time_span : Time::Span) : Nil
-    @wake_in = time_span
     @slept_at = Time.monotonic
+    @wake_in = time_span
     Crystal::EventLoop.enqueue(self)
   end
   
   def to_unsafe
-    pointerof(@overlapped)
+    pointerof(LibC::WSAOVERLAPPED.new(self))
   end
-
 end
