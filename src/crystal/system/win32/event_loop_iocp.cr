@@ -8,18 +8,18 @@ module Crystal::EventLoop
   def self.run_once : Nil
     unless @@queue.empty?
       next_event = @@queue.min_by { |e| e.wake_in }
-      elapsed_time = (Time.monotonic - next_event.slept_at)
+      time_elapsed = (Time.monotonic - next_event.slept_at)
 
-      unless elapsed_time > next_event.wake_in
-        sleepy_time = (next_event.wake_in - elapsed_time).total_milliseconds.to_i
+      unless time_elapsed > next_event.wake_in
+        sleepy_time = (next_event.wake_in - time_elapsed).total_milliseconds.to_i
         io_entry = Slice.new(1, LibC::OVERLAPPED_ENTRY.new)
         
-        unless LibC.GetQueuedCompletionStatusEx(Thread.current.iocp, io_entry, 1, out removed, sleepy_time, false)
-          raise RuntimeError.from_winerror("Error getting i/o completion status")
-        else
+        if LibC.GetQueuedCompletionStatusEx(Thread.current.iocp, io_entry, 1, out removed, sleepy_time, false)
           if removed == 1 && io_entry.first.lpOverlapped
             next_event = io_entry.first.lpOverlapped.value.cEvent.unsafe_as(Crystal::Event)
           end
+        else
+          raise RuntimeError.from_winerror("Error getting i/o completion status")
         end
       end
 

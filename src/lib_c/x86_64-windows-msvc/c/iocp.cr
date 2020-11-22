@@ -35,21 +35,6 @@ lib LibC
     numberOfConcurrentThreads : DWORD
   ) : HANDLE
 
-  fun PostQueuedCompletionStatus(
-    completionPort : HANDLE,
-    dwNumberofBytesTransferred : DWORD,
-    dwCompletionKey : ULONG_PTR,
-    lpOverlapped : WSAOVERLAPPED*
-  )
-
-  fun GetQueuedCompletionStatus(
-    completionPort : HANDLE,
-    lpNumberOfBytesTransferred : DWORD*,
-    lpCompletionKey : ULONG_PTR*,
-    lpOverlapped : WSAOVERLAPPED*,
-    dwMilliseconds : DWORD,
-  ) : BOOL
-
   fun GetQueuedCompletionStatusEx(
     completionPort : HANDLE,
     lpCompletionPortEntries : OVERLAPPED_ENTRY*,
