@@ -1,21 +1,10 @@
 require "c/winnt"
 
-# WSAOVERLAPPED is the primary communication structure for async I/O on Windows.
-# See https://docs.microsoft.com/en-us/windows/win32/api/winsock2/ns-winsock2-wsaoverlapped
-@[Extern]
-
 @[Link("advapi32")]
 lib LibC
 
-  type WINSOCK = Int32
-
-  alias LPWSAOVERLAPPED_COMPLETION_ROUTINE = Void*
-
-  struct WSABUF
-    len : ULong
-    buf : CHAR*
-  end
-
+  # WSAOVERLAPPED is the primary communication structure for async I/O on Windows.
+  # See https://docs.microsoft.com/en-us/windows/win32/api/winsock2/ns-winsock2-wsaoverlapped
   struct WSAOVERLAPPED
     internal : LibC::ULONG_PTR
     internalHigh : LibC::ULONG_PTR
